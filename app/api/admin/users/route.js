@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
-import { getRanking } from "../../../../lib/kicklet";
+import { getRankingCache } from "../../../../lib/store";
 
 export const dynamic = "force-dynamic";
 
-// Lista pontos por usuário (vindo do Kicklet). ?senha=...&busca=...
 export async function GET(req) {
   const url = new URL(req.url);
   if (url.searchParams.get("senha") !== process.env.ADMIN_PASSWORD)
     return NextResponse.json({ ok: false }, { status: 401 });
-  const busca = url.searchParams.get("busca") || "";
-  try {
-    let lista = await getRanking(100, busca);
-    return NextResponse.json({ ok: true, usuarios: lista });
-  } catch (e) {
-    return NextResponse.json({ ok: false, erro: "Falha ao ler Kicklet." }, { status: 502 });
-  }
+  const busca = (url.searchParams.get("busca") || "").toLowerCase();
+  const { ranking } = await getRankingCache();
+  let lista = ranking;
+  if (busca) lista = ranking.filter((v) => (v.viewerKickUsername || "").toLowerCase().includes(busca));
+  return NextResponse.json({ ok: true, usuarios: lista.slice(0, 100) });
 }
