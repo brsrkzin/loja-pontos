@@ -1,11 +1,11 @@
-import { getRanking } from "../../lib/kicklet";
+import { getRankingCache } from "../../lib/store";
 
 export const dynamic = "force-dynamic";
 
 export default async function Ranking() {
   let lista = [];
   try {
-    lista = await getRanking(20);
+    lista = (await getRankingCache()).ranking.slice(0, 20);
   } catch {
     lista = [];
   }
@@ -13,7 +13,7 @@ export default async function Ranking() {
     <div>
       <h1 className="mb-6 text-3xl font-extrabold">Ranking da comunidade</h1>
       {lista.length === 0 ? (
-        <p className="text-white/50">Sem dados de ranking ainda (ou Kicklet não configurado).</p>
+        <p className="text-white/50">Sem dados ainda. O ranking aparece quando o relay sincroniza os pontos.</p>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-white/10">
           <table className="w-full text-sm">
