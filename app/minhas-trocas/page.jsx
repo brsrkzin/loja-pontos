@@ -3,6 +3,13 @@ import { listRedemptions, hasStorage } from "../../lib/store";
 
 export const dynamic = "force-dynamic";
 
+const LABEL = {
+  processando: "Processando",
+  entregue: "Entregue",
+  pendente_envio: "Aguardando envio",
+  cancelado: "Cancelado",
+};
+
 export default async function MinhasTrocas() {
   const user = await getSession();
   if (!user) {
@@ -15,7 +22,7 @@ export default async function MinhasTrocas() {
   }
   let trocas = [];
   if (hasStorage()) {
-    const todas = await listRedemptions(1000);
+    const todas = await listRedemptions();
     trocas = todas.filter((t) => (t.username || "").toLowerCase() === user.username.toLowerCase());
   }
   return (
@@ -32,9 +39,14 @@ export default async function MinhasTrocas() {
               <div>
                 <div className="font-bold">{t.premioNome}</div>
                 <div className="text-xs text-white/40">{new Date(t.ts).toLocaleString("pt-BR")}</div>
-                {t.codigo && <div className="mt-1 font-mono text-sm text-kick-green">{t.codigo}</div>}
+                {t.codigo && t.status === "entregue" && (
+                  <div className="mt-1 font-mono text-sm text-kick-green">{t.codigo}</div>
+                )}
+                {t.status === "processando" && (
+                  <div className="mt-1 text-xs text-amber-300">Aguardando confirmação dos pontos…</div>
+                )}
               </div>
-              <span className="rounded px-2 py-1 text-xs uppercase text-white/60">{t.status}</span>
+              <span className="rounded px-2 py-1 text-xs uppercase text-white/60">{LABEL[t.status] || t.status}</span>
             </div>
           ))}
         </div>
